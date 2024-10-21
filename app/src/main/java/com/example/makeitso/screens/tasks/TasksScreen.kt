@@ -1,19 +1,3 @@
-/*
-Copyright 2022 Google LLC
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    https://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
- */
-
 package com.example.makeitso.screens.tasks
 
 import android.annotation.SuppressLint
@@ -35,6 +19,7 @@ import com.example.makeitso.common.ext.smallSpacer
 import com.example.makeitso.common.ext.toolbarActions
 import com.example.makeitso.model.Task
 import com.example.makeitso.theme.MakeItSoTheme
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 @ExperimentalMaterialApi
@@ -42,7 +27,11 @@ fun TasksScreen(
   openScreen: (String) -> Unit,
   viewModel: TasksViewModel = hiltViewModel()
 ) {
+  // Recoger el estado de las tareas
+  val tasks = viewModel.tasks.collectAsStateWithLifecycle(emptyList())
+
   TasksScreenContent(
+    tasks = tasks.value,  // Pasar las tareas recogidas
     onAddClick = viewModel::onAddClick,
     onSettingsClick = viewModel::onSettingsClick,
     onTaskCheckChange = viewModel::onTaskCheckChange,
@@ -57,6 +46,7 @@ fun TasksScreen(
 @Composable
 @ExperimentalMaterialApi
 fun TasksScreenContent(
+  tasks: List<Task>,  // Recibir la lista de tareas como parámetro
   modifier: Modifier = Modifier,
   onAddClick: ((String) -> Unit) -> Unit,
   onSettingsClick: ((String) -> Unit) -> Unit,
@@ -86,8 +76,9 @@ fun TasksScreenContent(
 
       Spacer(modifier = Modifier.smallSpacer())
 
+      // Usar el estado de tareas en LazyColumn
       LazyColumn {
-        items(emptyList<Task>(), key = { it.id }) { taskItem ->
+        items(tasks, key = { it.id }) { taskItem ->
           TaskItem(
             task = taskItem,
             options = listOf(),
@@ -106,6 +97,7 @@ fun TasksScreenContent(
 fun TasksScreenPreview() {
   MakeItSoTheme {
     TasksScreenContent(
+      tasks = emptyList(),  // Añadir lista vacía para la previsualización
       onAddClick = { },
       onSettingsClick = { },
       onTaskCheckChange = { },
